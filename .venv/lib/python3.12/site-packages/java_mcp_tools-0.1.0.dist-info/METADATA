@@ -1,0 +1,11 @@
+Metadata-Version: 2.4
+Name: java-mcp-tools
+Version: 0.1.0
+Summary: MCP server with IntelliJ-compatible tools for Java projects — no IDE required
+Requires-Python: >=3.11
+Requires-Dist: fastmcp>=2.0.0
+Requires-Dist: tree-sitter>=0.21.0
+Requires-Dist: tree-sitter-java>=0.21.0
+Provides-Extra: dev
+Requires-Dist: pytest>=8.0.0; extra == "dev"
+Requires-Dist: pytest-asyncio>=0.23.0; extra == "dev"

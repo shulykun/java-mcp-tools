@@ -1,0 +1,2 @@
+[console_scripts]
+java-mcp = java_mcp.server:main
