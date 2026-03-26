@@ -143,12 +143,31 @@ def find_usages(
         lines = content.splitlines()
         file_has_usage = False
 
+        # If method_name filter is set: check if this file contains the method call at all
+        # (method can be called via variable, not just ClassName.method)
+        if method_name and method_pattern:
+            if not method_pattern.search(content):
+                continue
+
         for line_no, line in enumerate(lines, start=1):
             if not pattern.search(line):
+                # When method filter is active, also report method call lines
+                # even if they don't contain the class name (called via variable)
+                if method_name and method_pattern and method_pattern.search(line):
+                    preview = line.strip()
+                    usages.append({
+                        "file": rel,
+                        "line": line_no,
+                        "preview": preview[:120],
+                        "usage_type": "method_call",
+                    })
+                    file_has_usage = True
+                    if len(usages) >= max_results:
+                        break
                 continue
 
             # Determine usage type
-            if f"import {target_fqn}" in line or (target_fqn and f"import {target_fqn}" in line):
+            if target_fqn and f"import {target_fqn}" in line:
                 usage_type = "import"
             elif re.search(r"\b" + re.escape(class_name) + r"\s+\w+", line):
                 usage_type = "declaration"
@@ -163,16 +182,13 @@ def find_usages(
             else:
                 usage_type = "reference"
 
-            # Filter by method if specified
-            if method_name and usage_type != "import":
+            # When method filter is set: skip class-reference lines that aren't method calls,
+            # unless it's an import (to show where the class is used)
+            if method_name and usage_type not in ("import", "method_call", "static_call"):
                 if not method_pattern.search(line):
-                    # Check next line too (method call may span lines)
-                    next_line = lines[line_no] if line_no < len(lines) else ""
-                    if not method_pattern.search(next_line):
-                        continue
+                    continue
 
             preview = line.strip()
-            # Highlight the match
             preview = pattern.sub(lambda m: f"||{m.group()}||", preview, count=1)
 
             usages.append({

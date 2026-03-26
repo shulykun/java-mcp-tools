@@ -91,6 +91,9 @@ def test_find_usages_with_method(project):
     assert result["total_usages"] > 0
     files = {u["file"] for u in result["usages"]}
     assert any("Impl" in f or "Controller" in f for f in files)
+    # Should contain method_call or static_call types
+    types = {u["usage_type"] for u in result["usages"]}
+    assert types & {"method_call", "static_call", "import"}
 
 
 def test_find_usages_unrelated_not_included(project):
