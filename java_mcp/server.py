@@ -33,6 +33,7 @@ from java_mcp.tools.java_analysis import (
     rename_refactoring,
 )
 from java_mcp.tools.runner import execute_run_configuration
+from java_mcp.tools.graph import find_usages, analyze_impact
 
 mcp = FastMCP(
     "java-mcp-tools",
@@ -263,6 +264,40 @@ def tool_execute_run_configuration(
     return execute_run_configuration(
         project_path, configuration_name, timeout, max_lines_count, truncate_mode
     )
+
+
+# ---------------------------------------------------------------------------
+# Dependency graph tools
+# ---------------------------------------------------------------------------
+
+@mcp.tool()
+def tool_find_usages(
+    project_path: str,
+    class_name: str,
+    method_name: Optional[str] = None,
+    max_results: int = 50,
+) -> dict:
+    """
+    Find all usages of a class (and optionally a specific method) across the project.
+    Uses import graph + text search. Returns {class_fqn, usages: [{file, line, preview, usage_type}]}.
+    usage_type: import | declaration | instantiation | static_call | implements | extends | reference
+    """
+    return find_usages(project_path, class_name, method_name, max_results)
+
+
+@mcp.tool()
+def tool_analyze_impact(
+    project_path: str,
+    class_name: str,
+    max_depth: int = 5,
+) -> dict:
+    """
+    Analyze the blast radius of changing a class: who directly and indirectly depends on it.
+    Uses BFS on the reverse import graph up to max_depth levels.
+    Returns {total_impacted, risk_level (none/low/medium/high/critical), impact_tree, summary}.
+    Use this before making changes to understand the scope of impact.
+    """
+    return analyze_impact(project_path, class_name, max_depth)
 
 
 # ---------------------------------------------------------------------------
