@@ -3,7 +3,7 @@
   "mcpServers": {
     "java-tools": {
       "command": "python",
-      "args": ["-m", "java_mcp.server"],
+      "args": ["-m", "java_mcp.server_agent"],
       "cwd": "."
     }
   }

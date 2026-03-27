@@ -74,15 +74,26 @@ source .venv/bin/activate
 pip install -e ".[dev]"
 ```
 
-## Running
+## Two server modes
+
+| Mode | Command | Tools | For |
+|------|---------|-------|-----|
+| Full | `python -m java_mcp.server` | 18 | MCP clients without native file tools |
+| Agent | `python -m java_mcp.server_agent` | 14 | Coding agents (Qwen Code CLI, Claude Code, Codex) |
+
+**Agent mode** removes `create_new_file`, `get_file_text_by_path`, `replace_text_in_file`, `get_symbol_info` — coding agents have these natively.
 
 ```bash
+# Full
 python -m java_mcp.server
-# or
 java-mcp
+
+# Agent (for Qwen Code CLI etc.)
+python -m java_mcp.server_agent
+java-mcp-agent
 ```
 
-## Qwen Code CLI setup
+## Qwen Code CLI setup (`agent` branch)
 
 Copy `.qwen/config.json` to your project root and adjust `cwd` path.  
 System prompt is in `qwen-system-prompt.md`.
@@ -93,7 +104,7 @@ System prompt is in `qwen-system-prompt.md`.
   "mcpServers": {
     "java-tools": {
       "command": "python",
-      "args": ["-m", "java_mcp.server"],
+      "args": ["-m", "java_mcp.server_agent"],
       "cwd": "/path/to/java-mcp-tools"
     }
   }

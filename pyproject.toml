@@ -21,6 +21,7 @@ dev = [
 
 [project.scripts]
 java-mcp = "java_mcp.server:main"
+java-mcp-agent = "java_mcp.server_agent:main"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
