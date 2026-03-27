@@ -41,6 +41,12 @@ Designed for AI coding assistants (Qwen Code CLI, Claude Code, etc.) that suppor
 | `find_spring_dependencies` | Spring injection map (@Autowired, @Inject, Lombok) via AST |
 | `analyze_spring_impact` | Blast radius including injection edges — more accurate than import-only |
 
+### Architecture
+| Tool | Description |
+|------|-------------|
+| `get_architecture` | Full AST-based dependency graph: layer table, key flows, violations, Mermaid |
+| `get_architecture_violations` | Detect layer rule breaches (DTO→Service, Config→Repository, etc.) |
+
 ### Analysis & execution
 | Tool | Description |
 |------|-------------|
@@ -97,7 +103,7 @@ System prompt is in `qwen-system-prompt.md`.
 ## Running tests
 
 ```bash
-pytest tests/ -v
+pytest tests/ -v        # 129 tests
 # Integration tests require mall + bike-rental-service in ../
 ```
 
@@ -114,6 +120,11 @@ java_mcp/
     java_analysis.py  ← get_symbol_info (tree-sitter + regex fallback)
     graph.py          ← find_usages, analyze_impact (import graph BFS)
     spring_graph.py   ← find_spring_dependencies, analyze_spring_impact (AST injection graph)
+    architecture.py   ← get_architecture, get_architecture_violations
+    dep_graph_renderer.py  ← layered/mermaid/tree/json renderers (ported from vibe-code-rag)
+    dependency_extractor.py ← tree-sitter: imports, types, method calls
+    dependency_graph.py    ← Edge graph (incoming/outgoing)
+    project_scanner.py     ← Maven/Gradle module discovery
     runner.py         ← execute_run_configuration
 ```
 
