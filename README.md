@@ -1,27 +1,63 @@
 # java-mcp-tools
 
-MCP server providing IntelliJ-compatible tools for Java projects — **no IDE required**.
+MCP server with IntelliJ-compatible tools for Java projects — **no IDE required**.
 
-Designed for AI coding assistants like Qwen Code CLI, Claude Code, and others that support MCP.
+Designed for AI coding assistants (Qwen Code CLI, Claude Code, etc.) that support MCP.
 
-## Tools
+> **v0.2** — stable subset. Unreliable tools removed.  
+> **v0.1-experimental** — full set including `get_file_problems`, `rename_refactoring`, `find_usages(method_name)`.
 
+---
+
+## Tools (v0.2 stable)
+
+### File system
 | Tool | Description |
 |------|-------------|
 | `create_new_file` | Create a file with optional content |
-| `get_file_text_by_path` | Read file content with truncation support |
+| `get_file_text_by_path` | Read file content (with truncation support) |
 | `replace_text_in_file` | Find-and-replace in a file |
 | `list_directory_tree` | ASCII tree of a directory |
 | `find_files_by_glob` | Find files by glob pattern (`src/**/*.java`) |
 | `find_files_by_name_keyword` | Find files by name substring |
-| `search_in_files_by_text` | Full-project text search |
+
+### Search
+| Tool | Description |
+|------|-------------|
+| `search_in_files_by_text` | Full-project text search with `\|\|highlight\|\|` |
 | `search_in_files_by_regex` | Full-project regex search |
+
+### Project info
+| Tool | Description |
+|------|-------------|
 | `get_project_modules` | Discover Maven/Gradle modules |
 | `get_project_dependencies` | Parse dependencies from pom.xml/build.gradle |
-| `get_file_problems` | Static analysis via javac + heuristics |
-| `get_symbol_info` | Symbol info at position (tree-sitter) |
-| `rename_refactoring` | Rename symbol across all .java files |
+
+### Dependency graph
+| Tool | Description |
+|------|-------------|
+| `find_usages` | Find all usages of a class (import graph + text search) |
+| `analyze_impact` | Blast radius via import graph (BFS) |
+| `find_spring_dependencies` | Spring injection map (@Autowired, @Inject, Lombok) via AST |
+| `analyze_spring_impact` | Blast radius including injection edges — more accurate than import-only |
+
+### Analysis & execution
+| Tool | Description |
+|------|-------------|
+| `get_symbol_info` | Symbol info at position (tree-sitter AST) |
 | `execute_run_configuration` | Run Maven/Gradle build/test/clean |
+
+---
+
+## What was removed in v0.2 (and why)
+
+| Tool | Reason |
+|------|--------|
+| `get_file_problems` | javac without classpath = 100 false errors on any real project |
+| `rename_refactoring` | Word-boundary replace — unsafe for autonomous agents (renames `Bike` in `BikeService` too) |
+| `find_usages(method_name)` | Method filter logic was fragile; use `search_in_files_by_regex("\\.methodName\\(")` instead |
+
+---
 
 ## Installation
 
@@ -35,18 +71,19 @@ pip install -e ".[dev]"
 ## Running
 
 ```bash
-# Start MCP server (stdio — default for Qwen Code CLI)
 python -m java_mcp.server
 # or
 java-mcp
 ```
 
-## Qwen Code CLI configuration
+## Qwen Code CLI setup
 
-Add to your MCP config:
+Copy `.qwen/config.json` to your project root and adjust `cwd` path.  
+System prompt is in `qwen-system-prompt.md`.
 
 ```json
 {
+  "systemPrompt": "qwen-system-prompt.md",
   "mcpServers": {
     "java-tools": {
       "command": "python",
@@ -61,25 +98,28 @@ Add to your MCP config:
 
 ```bash
 pytest tests/ -v
+# Integration tests require mall + bike-rental-service in ../
 ```
 
 ## Architecture
 
 ```
 java_mcp/
-  server.py          ← FastMCP server, tool registration
-  project.py         ← Project root resolution + security
+  server.py           ← FastMCP server, tool registration
+  project.py          ← Project root resolution + path traversal guard
   tools/
-    filesystem.py    ← create_new_file, get_file_text, replace_text, tree, glob, keyword
-    search.py        ← search_by_text, search_by_regex
-    project_info.py  ← get_modules, get_dependencies (Maven + Gradle)
-    java_analysis.py ← get_file_problems, get_symbol_info, rename_refactoring
-    runner.py        ← execute_run_configuration
+    filesystem.py     ← create, read, replace, tree, glob, keyword
+    search.py         ← text + regex search with ||highlight||
+    project_info.py   ← modules + deps (Maven + Gradle)
+    java_analysis.py  ← get_symbol_info (tree-sitter + regex fallback)
+    graph.py          ← find_usages, analyze_impact (import graph BFS)
+    spring_graph.py   ← find_spring_dependencies, analyze_spring_impact (AST injection graph)
+    runner.py         ← execute_run_configuration
 ```
 
-## Notes
+## Tested on real projects
 
-- `rename_refactoring` uses whole-word matching (`\bSymbolName\b`) — context-aware via tree-sitter if available
-- `get_file_problems` runs javac if available in PATH, plus regex-based heuristics (System.out, empty catch, TODO)
-- `get_symbol_info` uses tree-sitter-java for AST analysis, falls back to regex
-- All paths are relative to `project_path`; path traversal outside project root is blocked
+| Project | Files | Modules | Notes |
+|---------|-------|---------|-------|
+| [mall (macrozheng)](https://github.com/macrozheng/mall) | 526 | 8 | Spring Boot e-commerce |
+| [bike-rental-service](https://github.com/shulykun/bike-rental-service) | 43 | 1 | Spring Boot + Lombok |

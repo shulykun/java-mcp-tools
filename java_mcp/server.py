@@ -27,11 +27,7 @@ from java_mcp.tools.project_info import (
     get_project_modules,
     get_project_dependencies,
 )
-from java_mcp.tools.java_analysis import (
-    get_file_problems,
-    get_symbol_info,
-    rename_refactoring,
-)
+from java_mcp.tools.java_analysis import get_symbol_info
 from java_mcp.tools.runner import execute_run_configuration
 from java_mcp.tools.graph import find_usages, analyze_impact
 from java_mcp.tools.spring_graph import find_spring_dependencies, analyze_spring_impact
@@ -204,19 +200,6 @@ def tool_get_project_dependencies(project_path: str) -> list:
 # ---------------------------------------------------------------------------
 
 @mcp.tool()
-def tool_get_file_problems(
-    project_path: str,
-    file_path: str,
-    errors_only: bool = False,
-) -> list:
-    """
-    Analyze a Java file for problems using javac + heuristic rules.
-    Returns list of {severity, description, line, column, source}.
-    """
-    return get_file_problems(project_path, file_path, errors_only)
-
-
-@mcp.tool()
 def tool_get_symbol_info(
     project_path: str,
     file_path: str,
@@ -229,20 +212,6 @@ def tool_get_symbol_info(
     Returns {name, node_type, declaration_type, declaration_snippet, ...}.
     """
     return get_symbol_info(project_path, file_path, line, column)
-
-
-@mcp.tool()
-def tool_rename_refactoring(
-    project_path: str,
-    path_in_project: str,
-    symbol_name: str,
-    new_name: str,
-) -> dict:
-    """
-    Rename a symbol across all .java files in the project (whole-word match).
-    Returns {status, renamed_files: [{file, replacements}], total_replacements}.
-    """
-    return rename_refactoring(project_path, path_in_project, symbol_name, new_name)
 
 
 # ---------------------------------------------------------------------------
@@ -275,15 +244,15 @@ def tool_execute_run_configuration(
 def tool_find_usages(
     project_path: str,
     class_name: str,
-    method_name: Optional[str] = None,
     max_results: int = 50,
 ) -> dict:
     """
-    Find all usages of a class (and optionally a specific method) across the project.
+    Find all usages of a class across the project.
     Uses import graph + text search. Returns {class_fqn, usages: [{file, line, preview, usage_type}]}.
     usage_type: import | declaration | instantiation | static_call | implements | extends | reference
+    Tip: to find specific method call sites, use search_in_files_by_regex with pattern \\.methodName\\(
     """
-    return find_usages(project_path, class_name, method_name, max_results)
+    return find_usages(project_path, class_name, None, max_results)
 
 
 @mcp.tool()
