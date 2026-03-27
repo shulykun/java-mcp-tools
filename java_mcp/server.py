@@ -34,6 +34,7 @@ from java_mcp.tools.java_analysis import (
 )
 from java_mcp.tools.runner import execute_run_configuration
 from java_mcp.tools.graph import find_usages, analyze_impact
+from java_mcp.tools.spring_graph import find_spring_dependencies, analyze_spring_impact
 
 mcp = FastMCP(
     "java-mcp-tools",
@@ -298,6 +299,44 @@ def tool_analyze_impact(
     Use this before making changes to understand the scope of impact.
     """
     return analyze_impact(project_path, class_name, max_depth)
+
+
+# ---------------------------------------------------------------------------
+# Spring injection graph tools
+# ---------------------------------------------------------------------------
+
+@mcp.tool()
+def tool_find_spring_dependencies(
+    project_path: str,
+    class_name: Optional[str] = None,
+) -> dict:
+    """
+    Scan Spring injection relationships via AST (tree-sitter).
+    Detects @Autowired, @Inject, and private final fields with @RequiredArgsConstructor (Lombok).
+
+    If class_name given: returns {injections: [...], injected_by: [...], summary}
+    If class_name is None: returns full project injection graph.
+
+    injections = what this class depends on (its own injected fields)
+    injected_by = which other classes inject this class
+    injection_type: autowired | inject | lombok_constructor
+    """
+    return find_spring_dependencies(project_path, class_name)
+
+
+@mcp.tool()
+def tool_analyze_spring_impact(
+    project_path: str,
+    class_name: str,
+    max_depth: int = 5,
+) -> dict:
+    """
+    Like analyze_impact but includes Spring injection edges (@Autowired, Lombok constructor).
+    More accurate blast-radius than import-only graph.
+    Shows edge_type: import | injection for each impacted class.
+    Returns {total_impacted, risk_level, injection_edges_added, impact_tree, summary}.
+    """
+    return analyze_spring_impact(project_path, class_name, max_depth)
 
 
 # ---------------------------------------------------------------------------
