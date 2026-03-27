@@ -31,6 +31,7 @@ from java_mcp.tools.java_analysis import get_symbol_info
 from java_mcp.tools.runner import execute_run_configuration
 from java_mcp.tools.graph import find_usages, analyze_impact
 from java_mcp.tools.spring_graph import find_spring_dependencies, analyze_spring_impact
+from java_mcp.tools.architecture import get_architecture, get_architecture_violations
 
 mcp = FastMCP(
     "java-mcp-tools",
@@ -306,6 +307,43 @@ def tool_analyze_spring_impact(
     Returns {total_impacted, risk_level, injection_edges_added, impact_tree, summary}.
     """
     return analyze_spring_impact(project_path, class_name, max_depth)
+
+
+# ---------------------------------------------------------------------------
+# Architecture analysis
+# ---------------------------------------------------------------------------
+
+@mcp.tool()
+def tool_get_architecture(
+    project_path: str,
+    format: str = "layered",
+) -> str:
+    """
+    Build full AST-based dependency graph of the project.
+    Uses tree-sitter to extract classes, imports, type usage — much deeper than import-graph.
+
+    format:
+      layered  — layer table (Controller/Service/Repository/...) + key flows + violations (default)
+      tree     — each class with its dependency list
+      mermaid  — Mermaid diagram for visual rendering
+      json     — structured {classes, edges, violations} for programmatic use
+
+    Use 'layered' to understand architecture before implementing a feature.
+    Use 'mermaid' to generate a diagram.
+    Use 'json' for further processing.
+    """
+    return get_architecture(project_path, format)
+
+
+@mcp.tool()
+def tool_get_architecture_violations(project_path: str) -> list:
+    """
+    Detect architectural layer violations using AST dependency graph.
+    Checks rules like: DTO must not depend on Service, Repository must not call Service, etc.
+    Returns list of {source, target, source_layer, target_layer, reason}.
+    Run this before implementing a feature to understand existing architectural debt.
+    """
+    return get_architecture_violations(project_path)
 
 
 # ---------------------------------------------------------------------------
