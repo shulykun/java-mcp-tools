@@ -1,0 +1,10 @@
+{
+  "systemPrompt": "qwen-system-prompt.md",
+  "mcpServers": {
+    "java-tools": {
+      "command": "python",
+      "args": ["-m", "java_mcp.server"],
+      "cwd": "."
+    }
+  }
+}
