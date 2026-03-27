@@ -48,7 +48,7 @@ mcp = FastMCP(
 # ---------------------------------------------------------------------------
 
 @mcp.tool()
-def tool_create_new_file(
+def create_new_file(
     project_path: str,
     path_in_project: str,
     text: Optional[str] = None,
@@ -62,7 +62,7 @@ def tool_create_new_file(
 
 
 @mcp.tool()
-def tool_get_file_text_by_path(
+def get_file_text_by_path(
     project_path: str,
     path_in_project: str,
     max_lines: Optional[int] = None,
@@ -76,7 +76,7 @@ def tool_get_file_text_by_path(
 
 
 @mcp.tool()
-def tool_replace_text_in_file(
+def replace_text_in_file(
     project_path: str,
     path_in_project: str,
     old_text: str,
@@ -92,7 +92,7 @@ def tool_replace_text_in_file(
 
 
 @mcp.tool()
-def tool_list_directory_tree(
+def list_directory_tree(
     project_path: str,
     directory_path: str = "",
     max_depth: int = 5,
@@ -105,7 +105,7 @@ def tool_list_directory_tree(
 
 
 @mcp.tool()
-def tool_find_files_by_glob(
+def find_files_by_glob(
     project_path: str,
     glob_pattern: str,
     sub_directory: Optional[str] = None,
@@ -120,7 +120,7 @@ def tool_find_files_by_glob(
 
 
 @mcp.tool()
-def tool_find_files_by_name_keyword(
+def find_files_by_name_keyword(
     project_path: str,
     name_keyword: str,
     file_count_limit: int = 100,
@@ -137,7 +137,7 @@ def tool_find_files_by_name_keyword(
 # ---------------------------------------------------------------------------
 
 @mcp.tool()
-def tool_search_in_files_by_text(
+def search_in_files_by_text(
     project_path: str,
     search_text: str,
     directory_to_search: Optional[str] = None,
@@ -156,7 +156,7 @@ def tool_search_in_files_by_text(
 
 
 @mcp.tool()
-def tool_search_in_files_by_regex(
+def search_in_files_by_regex(
     project_path: str,
     regex_pattern: str,
     directory_to_search: Optional[str] = None,
@@ -179,7 +179,7 @@ def tool_search_in_files_by_regex(
 # ---------------------------------------------------------------------------
 
 @mcp.tool()
-def tool_get_project_modules(project_path: str) -> list:
+def get_project_modules(project_path: str) -> list:
     """
     Discover all modules in a Maven or Gradle project.
     Returns list of {name, type, path, build_file}.
@@ -188,7 +188,7 @@ def tool_get_project_modules(project_path: str) -> list:
 
 
 @mcp.tool()
-def tool_get_project_dependencies(project_path: str) -> list:
+def get_project_dependencies(project_path: str) -> list:
     """
     Parse project dependencies from pom.xml or build.gradle.
     Returns list of {group, artifact, version, scope}.
@@ -201,7 +201,7 @@ def tool_get_project_dependencies(project_path: str) -> list:
 # ---------------------------------------------------------------------------
 
 @mcp.tool()
-def tool_get_symbol_info(
+def get_symbol_info(
     project_path: str,
     file_path: str,
     line: int,
@@ -220,7 +220,7 @@ def tool_get_symbol_info(
 # ---------------------------------------------------------------------------
 
 @mcp.tool()
-def tool_execute_run_configuration(
+def execute_run_configuration(
     project_path: str,
     configuration_name: str,
     timeout: int = 120_000,
@@ -242,7 +242,7 @@ def tool_execute_run_configuration(
 # ---------------------------------------------------------------------------
 
 @mcp.tool()
-def tool_find_usages(
+def find_usages(
     project_path: str,
     class_name: str,
     max_results: int = 50,
@@ -257,7 +257,7 @@ def tool_find_usages(
 
 
 @mcp.tool()
-def tool_analyze_impact(
+def analyze_impact(
     project_path: str,
     class_name: str,
     max_depth: int = 5,
@@ -276,7 +276,7 @@ def tool_analyze_impact(
 # ---------------------------------------------------------------------------
 
 @mcp.tool()
-def tool_find_spring_dependencies(
+def find_spring_dependencies(
     project_path: str,
     class_name: Optional[str] = None,
 ) -> dict:
@@ -295,7 +295,7 @@ def tool_find_spring_dependencies(
 
 
 @mcp.tool()
-def tool_analyze_spring_impact(
+def analyze_spring_impact(
     project_path: str,
     class_name: str,
     max_depth: int = 5,
@@ -314,7 +314,7 @@ def tool_analyze_spring_impact(
 # ---------------------------------------------------------------------------
 
 @mcp.tool()
-def tool_get_architecture(
+def get_architecture(
     project_path: str,
     format: str = "layered",
 ) -> str:
@@ -336,7 +336,7 @@ def tool_get_architecture(
 
 
 @mcp.tool()
-def tool_get_architecture_violations(project_path: str) -> list:
+def get_architecture_violations(project_path: str) -> list:
     """
     Detect architectural layer violations using AST dependency graph.
     Checks rules like: DTO must not depend on Service, Repository must not call Service, etc.
